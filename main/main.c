@@ -31,44 +31,44 @@ led_strip_t *pasek_LED; // struktura LEDÓW, wskaźnikl do nich
 
 /**** Pocz�tek obs�ugi di�d RGB *****/
 
-////Obs�uga zdarze� zwi�zanych z diodami programowalnymi
-//void magicLED( void * arg )
-//{
-//	uint32_t red = 0;
-//	uint32_t green = 0;
-//	uint32_t blue = 0;
-//	uint16_t hue = 0;
-//	uint16_t start_rgb = 0;
-//	uint8_t krok;
-//
-//	//Utworzenie wska�nika do di�d led oraz zainicjowanie wysy�ania danych do di�d LED
-//	led_strip_t *pasek_LED = ProgrammableLED_init( RMT_TX_CHANNEL, GPIO, WS_LED_CNT);
-//
-//	//Obliczenie r�nicy pomi�dzy posczeg�lnymi warto�ciami w zale�no�ci od liczby programowanych di�d
-//	krok = 255/(WS_LED_CNT) ;
-//
-//	//Prosty przyk�ad kolorowej teczy na wy�wietlaczu
-//	while (true) {
-//		for (int j = 0; j < WS_LED_CNT; j++)
-//		{
-//			hue = krok * j + start_rgb;	//Obliczenie koloru dla kolejnych di�d w pasku RGB
-////			led_strip_hsv2rgb(hue, 255, 1, &red, &green, &blue);	//Przeliczenie koloru na RGB
-//			hsv_to_rgb(hue, 255, 15, &red, &green, &blue);	//Zamiana palety HSV na RGB
-//			pasek_LED->set_pixel(pasek_LED, j, red, green, blue);	//Umieszczenie danych w pami�ci dla di�d RGB
-////			printf("J: %d, R: %d, G: %d, B: %d \n",j, red, green, blue);
+//Obs�uga zdarze� zwi�zanych z diodami programowalnymi
+void magicLED0( void * arg )
+{
+	uint32_t red = 0;
+	uint32_t green = 0;
+	uint32_t blue = 0;
+	uint16_t hue = 0;
+	uint16_t start_rgb = 0;
+	uint8_t krok;
+
+	//Utworzenie wska�nika do di�d led oraz zainicjowanie wysy�ania danych do di�d LED
+	led_strip_t *pasek_LED = ProgrammableLED_init( RMT_TX_CHANNEL, GPIO, WS_LED_CNT);
+
+	//Obliczenie r�nicy pomi�dzy posczeg�lnymi warto�ciami w zale�no�ci od liczby programowanych di�d
+	krok = 255/(WS_LED_CNT) ;
+
+	//Prosty przyk�ad kolorowej teczy na wy�wietlaczu
+	while (true) {
+		for (int j = 0; j < WS_LED_CNT; j++)
+		{
+			hue = krok * j + start_rgb;	//Obliczenie koloru dla kolejnych di�d w pasku RGB
+//			led_strip_hsv2rgb(hue, 255, 1, &red, &green, &blue);	//Przeliczenie koloru na RGB
+			hsv_to_rgb(hue, 255, 15, &red, &green, &blue);	//Zamiana palety HSV na RGB
+			pasek_LED->set_pixel(pasek_LED, j, red, green, blue);	//Umieszczenie danych w pami�ci dla di�d RGB
+//			printf("J: %d, R: %d, G: %d, B: %d \n",j, red, green, blue);
+		}
+		// Wy�lij dane z pami�ci do di�d RGB
+		pasek_LED->refresh(pasek_LED, 0);
+
+			vTaskDelay(5); //50ms
+
+//			pasek_LED->clear(pasek_LED, 50);	//Czyszczenie wszystkich di�d
+//			vTaskDelay(1);
 //		}
-//		// Wy�lij dane z pami�ci do di�d RGB
-//		pasek_LED->refresh(pasek_LED, 0);
-//
-//			vTaskDelay(5); //50ms
-//
-////			pasek_LED->clear(pasek_LED, 50);	//Czyszczenie wszystkich di�d
-////			vTaskDelay(1);
-////		}
-//		start_rgb += krok;
-//////		kolor += 1;
-//	}
-//}
+		start_rgb += krok;
+////		kolor += 1;
+	}
+}
 /**** KONIEC obs�ugi di�d RGB *****/
 
 
@@ -785,7 +785,7 @@ void magicLED_8(void *arg){
 	int j=0;
 	while(1){
 
-		for(int i=0; i<70; i++){
+		for(int i=0; i<50; i++){
 			pasek_LED->set_pixel(pasek_LED,i,0,0,0);  //0,10,15 ładny niebieski
 		}
 
@@ -796,10 +796,10 @@ void magicLED_8(void *arg){
 			uint8_t sat = 255/15*j;
 			hsv_to_rgb(hue, 255, sat, &red, &green, &blue);
 			pasek_LED->set_pixel(pasek_LED,j,red,green,blue);
-			pasek_LED->set_pixel(pasek_LED,140-j,red,green,blue);
+			pasek_LED->set_pixel(pasek_LED,100-j,red,green,blue);
 
 		j++;
-		if (j>140){j=0;}
+		if (j>100){j=0;}
 		pasek_LED->refresh(pasek_LED,0);
 		vTaskDelay(16);
 	}
@@ -836,15 +836,15 @@ void magicLED_10(void *arg){
 
 	while(1){
 
-		for(int i=0; i<70; i++){
+		for(int i=0; i<50; i++){
 
 			hsv_to_rgb(hue, 255, 10, &red, &green, &blue);
 			pasek_LED->set_pixel(pasek_LED,i,red,green,blue);
 
 		}
-		for(int j = 0; j<11; j++){
+		for(int j = 0; j<6; j++){
 		srand(time(NULL));
-		uint8_t j = rand()%70;
+		uint8_t j = rand()%50;
 		uint8_t sat = 10;
 		for(int i=0; i<245; i++){
 			hsv_to_rgb(hue, 255, sat, &red, &green, &blue);
@@ -893,7 +893,62 @@ void magicLED_11(void *arg){
 	}
 }
 
+void magicLED_12(void *arg){
+	int j = 0;
+//	int z =25;
+	uint8_t hue = 30;
+	uint32_t red = 0;
+	uint32_t green = 0;
+	uint32_t blue = 0;
+
+	while(1){
+
+		if(j==120) j=0;
+
+//		if(j==0){
+//			hsv_to_rgb(hue, 255, 25, &red, &green, &blue);
+//			pasek_LED->set_pixel(pasek_LED,j,red,green,blue);
+
+//		}
+	if(j>=0){
+
+			for(int z = 0; z<50;z++)pasek_LED->set_pixel(pasek_LED,z,15,0,0);
+
+			for(int i = 0; i<10; i++){
+
+				int j1 = 110-i-j;
+
+//				if(j1==-10) j =0;
+
+				if(j1>0){
+
+					hsv_to_rgb(hue, 255, (i*25+5), &red, &green, &blue);
+					pasek_LED->set_pixel(pasek_LED,(i+j),red,green,blue);
+					pasek_LED->set_pixel(pasek_LED,j1,red,green,blue);
+//					pasek_LED->set_pixel(pasek_LED,(i+k),red,green,blue);
+					hue=hue+30;
+
+				}else if(j1<0){
+
+					int k = 110-j;
+					pasek_LED->set_pixel(pasek_LED,k,0,0,0);
+
+				}
+
+			}
+
+		}
+		j++;
+//		z++;
+		pasek_LED->refresh(pasek_LED,0);
+		vTaskDelay(7);
+
+	}
+
+}
+
 void magicLED(void * arg){
+//	magicLED0(&arg);
 //	magicLED_1(&arg); // McDonald #mastryca
 //	magicLED_2(&arg); // Abstrakcja #matrycas
 //	magicLED_3(&arg); // Pływające imie(niedkończone) #matryca
@@ -903,14 +958,16 @@ void magicLED(void * arg){
 //	magicLED_7(&arg); // strzłka w prawo biegnie w prawo #matryca
 //	magicLED_8(&arg); // kropka lewo prawo, zmiana kloru, zmiana jasności #bombki
 //	magicLED_9(&arg); // randomowa kropka zmienia kolory #bombki
-	magicLED_10(&arg); // matryca zmienia kolry i 10 ledów(rand)po jednej zwiększa swoją jasność, potem zmienuia kolor #bombki
+//	magicLED_10(&arg); // matryca zmienia kolry i 10 ledów(rand)po jednej zwiększa swoją jasność, potem zmienuia kolor #bombki
 //	magicLED_11(&arg); // to samo co wyżej tylko ze tylko jeden led swieci sie w jednym momencie i zmienia sie led i tak 5 #bombki
+	magicLED_12(&arg); // ala sinoleon z wleda niedokończony
 
 }
 
-void app_main(void)
-{
+void app_main(void){
+
 	pasek_LED = ProgrammableLED_init( RMT_TX_CHANNEL, GPIO, WS_LED_CNT);
 	xTaskCreatePinnedToCore( magicLED, "", 4096, NULL, 1, NULL, 1); // inicjacja taska do ledów
+
 	vTaskDelete(NULL);	//usuwanie taska głownego
 }

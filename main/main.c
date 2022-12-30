@@ -23,6 +23,8 @@
 
 #define RMT_TX_CHANNEL 0	//Numer kana�u RMT na jakim maj� dzia�a� diody
 
+QueueHandle_t kolejka1;
+
 led_strip_t *pasek_LED; // struktura LEDÓW, wskaźnikl do nich
 //#define EXAMPLE_CHASE_SPEED_MS (10)
 
@@ -895,7 +897,6 @@ void magicLED_11(void *arg){
 
 void magicLED_12(void *arg){
 	int j = 0;
-//	int z =25;
 	uint8_t hue = 30;
 	uint32_t red = 0;
 	uint32_t green = 0;
@@ -903,14 +904,11 @@ void magicLED_12(void *arg){
 
 	while(1){
 
+		for(int z = 0; z<50;z++)pasek_LED->set_pixel(pasek_LED,z,15,0,0);
+
 		if(j==120) j=0;
 
-//		if(j==0){
-//			hsv_to_rgb(hue, 255, 25, &red, &green, &blue);
-//			pasek_LED->set_pixel(pasek_LED,j,red,green,blue);
-
-//		}
-	if(j>=0){
+		if(j>=1){
 
 			for(int z = 0; z<50;z++)pasek_LED->set_pixel(pasek_LED,z,15,0,0);
 
@@ -918,14 +916,11 @@ void magicLED_12(void *arg){
 
 				int j1 = 110-i-j;
 
-//				if(j1==-10) j =0;
+				if(j1>=0){
 
-				if(j1>0){
-
-					hsv_to_rgb(hue, 255, (i*25+5), &red, &green, &blue);
+					hsv_to_rgb(hue, 255, (i*25+15), &red, &green, &blue);
 					pasek_LED->set_pixel(pasek_LED,(i+j),red,green,blue);
 					pasek_LED->set_pixel(pasek_LED,j1,red,green,blue);
-//					pasek_LED->set_pixel(pasek_LED,(i+k),red,green,blue);
 					hue=hue+30;
 
 				}else if(j1<0){
@@ -938,12 +933,103 @@ void magicLED_12(void *arg){
 			}
 
 		}
+
+		if(j==0){
+
+			for(int i = 0; i<9;i++){
+
+				hsv_to_rgb(hue, 255, (i*25+15), &red, &green, &blue);
+				pasek_LED->set_pixel(pasek_LED,i,red,green,blue);
+				hue=hue+30;
+				pasek_LED->refresh(pasek_LED,0);
+				vTaskDelay(6);
+
+			}
+			hsv_to_rgb(hue, 255, 9, &red, &green, &blue);
+			pasek_LED->set_pixel(pasek_LED,10,red,green,blue);
+			hue=hue+30;
+
+		}
+
 		j++;
-//		z++;
 		pasek_LED->refresh(pasek_LED,0);
-		vTaskDelay(7);
+		vTaskDelay(6);
 
 	}
+
+}
+
+void magicLED_13(void *arg){
+
+	int tab[10];
+	int itab = sizeof(tab)/ sizeof(tab[0]);
+
+	uint32_t redw = 0;
+	uint32_t greenw = 0;
+	uint32_t bluew = 0;
+
+	hsv_to_rgb(0, 0, 255, &redw, &greenw, &bluew);// biały
+
+	while(1){
+
+		srand(time(NULL));
+
+		for(int z = 0; z<50;z++)pasek_LED->set_pixel(pasek_LED,z,0,0,20);
+
+		for(int i =0; i<itab; i++){
+
+			tab[i] = rand()%50;
+			pasek_LED->set_pixel(pasek_LED, tab[i], redw, greenw, bluew);
+		}
+
+		pasek_LED->refresh(pasek_LED,0);
+		vTaskDelay(1);
+
+	}
+
+}
+
+void magicLED_14(void *arg){
+
+		int k =0;
+		uint32_t red = 0;
+		uint32_t green = 0;
+		uint32_t blue = 0;
+		uint16_t hue = 0;
+		uint16_t start_rgb = 0;
+		uint8_t krok;
+		krok = 255/25 ;
+
+		while (true) {
+
+			for(int z = 0; z<50;z++)pasek_LED->set_pixel(pasek_LED,z,0,0,0);
+
+			if(k<100){
+				for (int j = 0; j < 25; j++){
+					hue = krok * j + start_rgb;
+					hsv_to_rgb(hue, 255, 50, &red, &green, &blue);
+					pasek_LED->set_pixel(pasek_LED, 2*j, red, green, blue);
+
+				}
+				start_rgb += krok;
+			}
+
+			if(k>100 && k<200){
+				for (int j = 0; j < 25; j++){
+					hue = krok * j + start_rgb;
+					hsv_to_rgb(hue, 255, 50, &red, &green, &blue);
+					pasek_LED->set_pixel(pasek_LED, 2*j+1, red, green, blue);
+
+				}
+				start_rgb -= krok;
+			}
+
+			if(k==200) k=0;
+			k++;
+			pasek_LED->refresh(pasek_LED, 0);
+			vTaskDelay(5);
+
+		}
 
 }
 
@@ -960,14 +1046,174 @@ void magicLED(void * arg){
 //	magicLED_9(&arg); // randomowa kropka zmienia kolory #bombki
 //	magicLED_10(&arg); // matryca zmienia kolry i 10 ledów(rand)po jednej zwiększa swoją jasność, potem zmienuia kolor #bombki
 //	magicLED_11(&arg); // to samo co wyżej tylko ze tylko jeden led swieci sie w jednym momencie i zmienia sie led i tak 5 #bombki
-	magicLED_12(&arg); // ala sinoleon z wleda niedokończony
+//	magicLED_12(&arg); // ala sinoleon z wleda
+//	magicLED_13(&arg); // "wirujące koła"
+	magicLED_14(&arg); // efekt ze co druga dioda świeci w prawo, potem sie zamieniajaą diody i w lewo
 
+}
+
+void LED(void *arg){
+
+	int licznik = 0;
+	//################
+	int j = 0;
+	uint16_t hue = 30;
+	uint32_t red = 0;
+	uint32_t green = 0;
+	uint32_t blue = 0;
+
+	int tab[10];
+	int itab = sizeof(tab)/ sizeof(tab[0]);
+	uint32_t redw = 0;
+	uint32_t greenw = 0;
+	uint32_t bluew = 0;
+	hsv_to_rgb(0, 0, 255, &redw, &greenw, &bluew);// biały
+
+	int k =0;
+	uint16_t start_rgb = 0;
+	uint8_t krok;
+	krok = 255/50 ;
+
+	while(1){
+
+		xQueueReceive(kolejka1, &licznik, 0);
+			printf("licznik:%d\n",licznik);
+
+		//#########################################################
+		//Efekt 1
+
+		if(licznik<=20){
+			printf("efekt1\n");
+
+			for(int z = 0; z<50;z++)pasek_LED->set_pixel(pasek_LED,z,15,0,0);
+
+					if(j==120) j=0;
+
+					if(j>=1){
+
+						for(int z = 0; z<50;z++)pasek_LED->set_pixel(pasek_LED,z,15,0,0);
+
+						for(int i = 0; i<10; i++){
+
+							int j1 = 110-i-j;
+
+							if(j1>=0){
+
+								hsv_to_rgb(hue, 255, (i*25+15), &red, &green, &blue);
+								pasek_LED->set_pixel(pasek_LED,(i+j),red,green,blue);
+								pasek_LED->set_pixel(pasek_LED,j1,red,green,blue);
+								hue=hue+30;
+
+							}else if(j1<0){
+
+								int k = 110-j;
+								pasek_LED->set_pixel(pasek_LED,k,0,0,0);
+
+							}
+
+						}
+
+					}
+
+					if(j==0){
+
+						for(int i = 0; i<9;i++){
+
+							hsv_to_rgb(hue, 255, (i*25+15), &red, &green, &blue);
+							pasek_LED->set_pixel(pasek_LED,i,red,green,blue);
+							hue=hue+30;
+							pasek_LED->refresh(pasek_LED,0);
+							vTaskDelay(6);
+
+						}
+						hsv_to_rgb(hue, 255, 9, &red, &green, &blue);
+						pasek_LED->set_pixel(pasek_LED,10,red,green,blue);
+						hue=hue+30;
+
+					}
+
+					j++;
+					pasek_LED->refresh(pasek_LED,0);
+					vTaskDelay(6);
+		}
+
+		//#########################################################
+		//Efekt 2
+
+		if(licznik>20 && licznik <=40){
+			printf("efekt2\n");
+
+			srand(time(NULL));
+
+					for(int z = 0; z<50;z++)pasek_LED->set_pixel(pasek_LED,z,0,0,20);
+
+					for(int i =0; i<itab; i++){
+
+						tab[i] = rand()%50;
+						pasek_LED->set_pixel(pasek_LED, tab[i], redw, greenw, bluew);
+					}
+
+					pasek_LED->refresh(pasek_LED,0);
+					vTaskDelay(1);
+
+
+
+		}
+
+		//#########################################################
+		//Efekt 3
+
+		if(licznik>40){
+			printf("efekt3\n");
+
+			for(int z = 0; z<50;z++) pasek_LED->set_pixel(pasek_LED,z,0,0,0);
+
+						if(k<100){
+							for (int j = 0; j < 25; j++){
+								hue = krok * j + start_rgb;
+								hsv_to_rgb(hue, 255, 50, &red, &green, &blue);
+								pasek_LED->set_pixel(pasek_LED, 2*j, red, green, blue);
+
+							}
+							start_rgb += krok;
+						}
+
+						if(k>100 && k<200){
+							for (int j = 0; j < 25; j++){
+								hue = krok * j + start_rgb;
+								hsv_to_rgb(hue, 255, 50, &red, &green, &blue);
+								pasek_LED->set_pixel(pasek_LED, 2*j+1, red, green, blue);
+
+							}
+							start_rgb -= krok;
+						}
+
+						if(k==200) k=0;
+						k++;
+						pasek_LED->refresh(pasek_LED, 0);
+						vTaskDelay(5);
+
+
+		}
+//		vTaskDelay(1);
+
+	}
 }
 
 void app_main(void){
 
+	int licznik = 1;
+	kolejka1 = xQueueCreate(10, sizeof(int));
 	pasek_LED = ProgrammableLED_init( RMT_TX_CHANNEL, GPIO, WS_LED_CNT);
 	xTaskCreatePinnedToCore( magicLED, "", 4096, NULL, 1, NULL, 1); // inicjacja taska do ledów
+//	xTaskCreatePinnedToCore(LED, "", 4096, NULL, 1, NULL,1); // przechodzenie efektów
 
-	vTaskDelete(NULL);	//usuwanie taska głownego
+//	vTaskDelete(NULL);	//usuwanie taska głownego
+
+	while(1){
+		if(licznik == 61) licznik = 1;
+		xQueueSend(kolejka1, &licznik,0);
+		licznik++;
+		vTaskDelay(100);
+	}
 }

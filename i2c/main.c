@@ -22,6 +22,8 @@
 #define address 0b01110000 // dla write
 // define address 0b01110001 // dla read
 
+// przy pcf8574an od texasa kod działa
+// przy pcf8574ap od nxp nie chce działac
 
 
 void app_main()

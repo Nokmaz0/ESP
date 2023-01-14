@@ -1,70 +1,54 @@
-#include <stdio.h>
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
-#include "driver/gpio.h"
-#include "esp_log.h"
-#include "led_strip.h"
-#include "sdkconfig.h"
+#include "esp_wifi.h"
 #include "esp_system.h"
-#include "esp_spi_flash.h"
-#include "FreeRTOSConfig.h"
-#include "driver/i2c.h"
+#include "esp_event.h"
+#include "nvs_flash.h"
+#include "driver/gpio.h"
+#include "driver/adc.h"
+#include "esp_adc_cal.h"
 
-//#include "driver/adc.h"  // biblioteka do adc
+#define samples 200
 
-//#include "nok_i2c.h"
+int val= 0;
+int vout = 0;
+uint vout2 = 0;
+int v = 0;
+int v1 =0;
 
-#define LED1 2
-#define LED2 4
-
-#define address 0b01110000
-//#define tag "jeden"
-
-
-void app_main()
-{
-
-//	gpio_set_direction(2, GPIO_MODE_OUTPUT);
-	i2c_config_t conf;
-	conf.mode = I2C_MODE_MASTER;
-	conf.sda_io_num = 18;
-	conf.sda_pullup_en = true;
-	conf.scl_io_num = 19;
-	conf.scl_pullup_en = true;
-	conf.master.clk_speed = 100000;
-//	conf.clk_flags = 0;
+//gpio 36
 
 
-	i2c_driver_install(I2C_NUM_1, I2C_MODE_MASTER, 0, 0, 0);
-	i2c_param_config(I2C_NUM_1, &conf);
+void app_main(void){
 
-	i2c_cmd_handle_t cmd;
-	cmd = i2c_cmd_link_create();
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, address, 1);
-	i2c_master_write_byte(cmd, 0x1, 1);
-	i2c_master_stop(cmd);
-	esp_err_t res = i2c_master_cmd_begin(I2C_NUM_1, cmd, 10);
-	if(res == ESP_OK) printf("ok1\n");
-	if(res == ESP_ERR_INVALID_ARG) printf("ok2\n");
-	if(res == ESP_FAIL) printf("ok3\n"); // caly czas sie to wyswietla
-	if(res == ESP_ERR_INVALID_STATE) printf("ok4\n");
-	if(res == ESP_ERR_TIMEOUT) printf("ok5\n");
+	adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_11);
+	adc1_config_width(ADC_WIDTH_BIT_12);
 
-	i2c_cmd_link_delete(cmd);
-	i2c_driver_delete(I2C_NUM_1);
-
-
+//	esp_adc_cal_characteristics_t conf;
+//	conf.adc_num = ADC1_CHANNEL_0;
+//	conf.atten = ADC_ATTEN_DB_11;
+//	conf.bit_width = ADC_WIDTH_BIT_12;
+//
+//	esp_adc_cal_characterize(ADC1_CHANNEL_0, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 0, &conf);
 
 	while(1){
 
-//		drukuj(1);
+		//multisampling
+		for(int i = 0; i<samples; i++){
+			val = adc1_get_raw(ADC1_CHANNEL_0);
+			vout += val;
+		}
+		vout2 = vout/samples;
+		v = vout2 * 3300/4096 +150;
+		if(vout2>3600) v-= 150;
+		if(v == 150) v=0;
+//		v1 = esp_adc_cal_raw_to_voltage(vout, &conf);
+//		printf("Voltage : %d, raw: %d\n", v1 , vout2);
+		printf("Voltage: %d mv, raw: %d\n", v , vout2);
+		v = 0;
+		v1 = 0;
+		vout = 0;
+		vTaskDelay(10);
 
-		vTaskDelay(100);
 	}
-
-
 }
-
 

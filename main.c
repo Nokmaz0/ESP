@@ -13,19 +13,19 @@
 
 //#include "driver/adc.h"  // biblioteka do adc
 
-#include "nok_i2c.h"
+//#include "nok_i2c.h"
 
 #define LED1 2
 #define LED2 4
 
-#define address 0b0111000
-#define tag "jeden"
+#define address 0b01110000
+//#define tag "jeden"
 
 
 void app_main()
 {
 
-	gpio_set_direction(2, GPIO_MODE_OUTPUT);
+//	gpio_set_direction(2, GPIO_MODE_OUTPUT);
 	i2c_config_t conf;
 	conf.mode = I2C_MODE_MASTER;
 	conf.sda_io_num = 18;
@@ -59,7 +59,7 @@ void app_main()
 
 	while(1){
 
-		drukuj(1);
+//		drukuj(1);
 
 		vTaskDelay(100);
 	}
